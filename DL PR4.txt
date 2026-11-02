@@ -1,0 +1,76 @@
+# Practical 4: Anomaly Detection using Autoencoder
+
+# a. Import required libraries
+import numpy as np
+import tensorflow as tf
+import matplotlib.pyplot as plt
+
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Dense
+
+# b. Upload / access the dataset
+(x_train, _), (x_test, _) = mnist.load_data()
+
+x_train = x_train.astype('float32') / 255.0
+x_test = x_test.astype('float32') / 255.0
+
+x_train = x_train.reshape(-1, 784)
+x_test = x_test.reshape(-1, 784)
+
+# c. Encoder converts input into latent representation
+input_layer = Input(shape=(784,))
+
+encoded = Dense(128, activation='relu')(input_layer)
+encoded = Dense(64, activation='relu')(encoded)
+latent = Dense(32, activation='relu')(encoded)
+
+# d. Decoder converts latent representation into original input
+decoded = Dense(64, activation='relu')(latent)
+decoded = Dense(128, activation='relu')(decoded)
+output_layer = Dense(784, activation='sigmoid')(decoded)
+
+autoencoder = Model(input_layer, output_layer)
+
+# e. Compile model with optimizer, loss and evaluation metrics
+autoencoder.compile(
+    optimizer='adam',
+    loss='mse',
+    metrics=['mae']
+)
+
+# Train autoencoder
+autoencoder.fit(
+    x_train, x_train,
+    epochs=5,
+    batch_size=256,
+    validation_split=0.1
+)
+
+# Reconstruct test images
+reconstructed = autoencoder.predict(x_test)
+
+# Calculate reconstruction error for anomaly detection
+errors = np.mean((x_test - reconstructed) ** 2, axis=1)
+
+threshold = np.percentile(errors, 95)
+anomalies = errors > threshold
+
+print("Anomaly Threshold:", threshold)
+print("Number of Anomalies:", np.sum(anomalies))
+
+# Display original and reconstructed images
+plt.figure(figsize=(10, 4))
+
+for i in range(5):
+    plt.subplot(2, 5, i + 1)
+    plt.imshow(x_test[i].reshape(28, 28), cmap='gray')
+    plt.title("Original")
+    plt.axis('off')
+
+    plt.subplot(2, 5, i + 6)
+    plt.imshow(reconstructed[i].reshape(28, 28), cmap='gray')
+    plt.title("Reconstructed")
+    plt.axis('off')
+
+plt.show()

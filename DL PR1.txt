@@ -1,0 +1,37 @@
+"Practical 1 installation steps"
+
+
+pip install tensorflow
+pip install keras
+pip install torch torchvision
+pip install Theano
+
+TensorFlow: this already includes Keras, but installing keras separately is fine.
+PyTorch: the command above installs the CPU version, which is enough for the lab.
+Theano: it is discontinued, so pip install theano may install but fail on import with newer numpy. If that happens, try:
+
+  pip install pytensor
+
+PyTensor is the maintained fork of Theano. Mention this in your journal, it earns marks.
+
+Using Colab instead? TensorFlow, Keras and PyTorch are already installed. Only run !pip install theano or !pip install pytensor in a cell.
+
+Step 2: Verify the installation
+
+Paste this in a Jupyter cell and run it. Take a screenshot of the output for your journal.
+
+code:
+import tensorflow as tf
+import keras
+import torch
+
+print("TensorFlow version:", tf.__version__)
+print("Keras version:", keras.__version__)
+print("PyTorch version:", torch.__version__)
+
+try:
+    import theano
+    print("Theano version:", theano.__version__)
+except Exception as e:
+    import pytensor
+    print("Theano failed, PyTensor version:", pytensor.__ver
